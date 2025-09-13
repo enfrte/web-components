@@ -22,105 +22,110 @@
 
 class NotTypeaheadInput extends HTMLElement {
 	constructor() {
-	super();
-	this.attachShadow({ mode: 'open' });
-	this.debounceTimer = null;
-	this.debounceWait = 300; // debounce wait time
+		super();
+		this.attachShadow({ mode: 'open' });
+		this.debounceTimer = null;
+		this.debounceWait = 300; // debounce wait time
 	}
 
 	connectedCallback() {
-	this.render();
+		this.render();
 	}
 
 	render() {
-	this.shadowRoot.innerHTML = `
+		this.shadowRoot.innerHTML = `
 		<style>
-		input {
-			width: 250px;
-			padding: 8px;
-			font-size: 16px;
-		}
+			input {
+				width: 250px;
+				padding: 8px;
+				font-size: 16px;
+			}
 		</style>
+		
 		<div style="position: relative;">
-		<input type="text" placeholder="Search...">
-		<div class="suggestions" style="display:none;"></div>
+			<input type="text" placeholder="Search...">
+			<div class="suggestions" style="display:none;"></div>
 		</div>
-	`;
+		`;
 
-	this.inputEl = this.shadowRoot.querySelector("input");
-	this.suggestionsEl = this.shadowRoot.querySelector(".suggestions");
+		this.inputEl = this.shadowRoot.querySelector("input");
+		this.suggestionsEl = this.shadowRoot.querySelector(".suggestions");
 
-	// Parse attributes
-	this.staticData = [];
-	if (this.getAttribute("data")) {
-		try {
-		this.staticData = JSON.parse(this.getAttribute("data"));
-		} catch (e) {
-		console.warn("Invalid JSON in data attribute", e);
+		// Parse attributes
+		this.staticData = [];
+		
+		if (this.getAttribute("data")) {
+			try {
+			this.staticData = JSON.parse(this.getAttribute("data"));
+			} catch (e) {
+			console.warn("Invalid JSON in data attribute", e);
+			}
 		}
-	}
-	this.apiUrl = this.getAttribute("api") || null;
+		
+		this.apiUrl = this.getAttribute("api") || null;
 
-	this.inputEl.addEventListener("input", () => this.debounce(() => this.onInput(), this.debounceWait));
+		this.inputEl.addEventListener("input", () => this.debounce(() => this.onInput(), this.debounceWait));
 	}
 
 	// Debounce utility
 	debounce(func, wait) {
-	clearTimeout(this.debounceTimer);
-	this.debounceTimer = setTimeout(func, wait);
+		clearTimeout(this.debounceTimer);
+		this.debounceTimer = setTimeout(func, wait);
 	}
 
 	async onInput() {
-	const query = this.inputEl.value.trim().toLowerCase();
-	if (query.length < 2) {
-		this.suggestionsEl.style.display = "none";
-		return;
-	}
+		const query = this.inputEl.value.trim().toLowerCase();
 
-	let results = [];
-
-	// Static data filtering
-	if (this.staticData.length > 0) {
-		results = this.staticData.filter(item =>
-		item.toLowerCase().includes(query)
-		);
-	}
-
-	// Remote API fetching
-	if (this.apiUrl) {
-		try {
-		const res = await fetch(this.apiUrl);
-		if (res.ok) {
-			const apiResults = await res.json();
-			results = [...results, ...apiResults]; // Merge results
+		if (query.length < 2) {
+			this.suggestionsEl.style.display = "none";
+			return;
 		}
-		} catch (err) {
-		console.error("API fetch error:", err);
-		}
-	}
 
-	this.showSuggestions(results);
+		let results = [];
+
+		// Static data filtering
+		if (this.staticData.length > 0) {
+			results = this.staticData.filter(item =>
+			item.toLowerCase().includes(query)
+			);
+		}
+
+		// Remote API fetching
+		if (this.apiUrl) {
+			try {
+			const res = await fetch(this.apiUrl);
+			if (res.ok) {
+				const apiResults = await res.json();
+				results = [...results, ...apiResults]; // Merge results
+			}
+			} catch (err) {
+			console.error("API fetch error:", err);
+			}
+		}
+
+		this.showSuggestions(results);
 	}
 
 	showSuggestions(results) {
-	this.suggestionsEl.innerHTML = "";
-	if (results.length === 0) {
-		this.suggestionsEl.style.display = "none";
-		return;
-	}
+		this.suggestionsEl.innerHTML = "";
+		
+		if (results.length === 0) {
+			this.suggestionsEl.style.display = "none";
+			return;
+		}
 
-	results.forEach(item => {
-		const div = document.createElement("div");
-		div.textContent = item;
-		div.className = "suggestion";
-		div.addEventListener("click", () => {
-		this.inputEl.value = item;
-		this.suggestionsEl.style.display = "none";
+		results.forEach(item => {
+			const div = document.createElement("div");
+			div.textContent = item;
+			div.className = "suggestion";
+			div.addEventListener("click", () => {
+				this.inputEl.value = item;
+				this.suggestionsEl.style.display = "none";
+			});
+			this.suggestionsEl.appendChild(div);
 		});
-		this.suggestionsEl.appendChild(div);
-	});
 
-	this.suggestionsEl.style.display = "block";
+		this.suggestionsEl.style.display = "block";
 	}
 }
 
