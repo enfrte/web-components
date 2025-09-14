@@ -42,7 +42,7 @@ class NotTypeaheadInput extends HTMLElement {
 			}
 		</style>
 		
-		<div style="position: relative;">
+		<div>
 			<input type="text" placeholder="Search...">
 			<div class="suggestions" style="display:none;"></div>
 		</div>
@@ -56,15 +56,25 @@ class NotTypeaheadInput extends HTMLElement {
 		
 		if (this.getAttribute("data")) {
 			try {
-			this.staticData = JSON.parse(this.getAttribute("data"));
+				this.staticData = JSON.parse(this.getAttribute("data"));
 			} catch (e) {
-			console.warn("Invalid JSON in data attribute", e);
+				console.warn("Invalid JSON in data attribute", e);
 			}
 		}
-		
-		this.apiUrl = this.getAttribute("api") || null;
 
-		this.inputEl.addEventListener("input", () => this.debounce(() => this.onInput(), this.debounceWait));
+		this.apiUrl = this.getAttribute("api") || null;
+		this.inputEl.name = this.getAttribute("input-name") || "not-typeahead-input";
+		this.inputEl.type = this.getAttribute("input-type") || "text";
+		this.inputEl.value = this.getAttribute("input-value") || "";
+		
+		// this.inputEl.addEventListener("input", () => this.debounce(() => this.onInput(), this.debounceWait));
+		this.inputEl.addEventListener("input", () => {
+			this.debounce(
+				() => this.onInput(),
+				this.debounceWait
+			);
+		});
+
 	}
 
 	// Debounce utility
@@ -86,17 +96,25 @@ class NotTypeaheadInput extends HTMLElement {
 		// Static data filtering
 		if (this.staticData.length > 0) {
 			results = this.staticData.filter(item =>
-			item.toLowerCase().includes(query)
+				item.toLowerCase().includes(query)
 			);
 		}
 
 		// Remote API fetching
 		if (this.apiUrl) {
 			try {
-			const res = await fetch(this.apiUrl);
+			// Make a post request with query as body
+			const res = await fetch(this.apiUrl, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded"
+				},
+				body: new URLSearchParams({ [this.inputEl.name]: query })
+			});
+
 			if (res.ok) {
 				const apiResults = await res.json();
-				results = [...results, ...apiResults]; // Merge results
+				results = [...results, ...apiResults]; // Merge results if both static and API
 			}
 			} catch (err) {
 			console.error("API fetch error:", err);

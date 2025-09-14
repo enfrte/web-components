@@ -1,49 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Not Typeahead Web Component Demo</title>
-  <style>
-    .suggestions {
-      position: absolute;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      width: 100%;
-      max-height: 150px;
-      overflow-y: auto;
-      z-index: 1000;
-    }
-    .suggestion {
-      padding: 8px;
-      cursor: pointer;
-    }
-    .suggestion:hover {
-      background: #eee;
-    }
-  </style>
+	<meta charset="UTF-8">
+	<title>Not Typeahead Web Component Demo</title>
+	<style>
+		.suggestions {
+			position: absolute;
+			background: white;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			width: 100%;
+			max-height: 150px;
+			overflow-y: auto;
+			z-index: 1000;
+		}
+		.suggestion {
+			padding: 8px;
+			cursor: pointer;
+		}
+		.suggestion:hover {
+			background: #eee;
+		}
+	</style>
+	<script src="not-typeahead-input.js"></script>
 </head>
 <body>
-  <h2>Not typeahead - A typeahead like web component</h2>
+	<h2>Not typeahead - A typeahead like web component</h2>
 
-  <p>No jQuery or Typeahead.js dependency.</p>
-  <p>Works with data (static array) OR api (remote fetch) OR both.</p>
-  <p>Only triggers when typing 2 or more characters.</p>
-  <p>Simple dropdown suggestion box inside Shadow DOM.</p>
+	<p>No jQuery or Typeahead.js dependency.</p>
+	<p>Works with data (static array) OR api (remote fetch) OR both.</p>
+	<p>Only triggers when typing 2 or more characters.</p>
+	<p>Simple dropdown suggestion box inside Shadow DOM.</p>
 
-  <!-- Example usages -->
+	<!-- Example usages -->
 
-  <p>Static data only</p>
-  <not-typeahead-input data='["Alabama","Alaska","Arizona","Arkansas","California","Colorado"]'></not-typeahead-input>
+	<p>Static data only</p>
+	<not-typeahead-input data='["Alabama","Alaska","Arizona","Arkansas","California","Colorado"]'></not-typeahead-input>
 
-  <p>Remote API only</p>
-  <not-typeahead-input api="https://api.example.com/search"></not-typeahead-input>
-  
-  <p>Both static data and remote API</p>
-  <not-typeahead-input 
-    data='["Apple","Banana","Orange"]'
-    api="https://api.example.com/search">
-  </not-typeahead-input>
+	<p>Remote API only</p>
+	<not-typeahead-input input-name="backend_call_example" api="backend_call.php"></not-typeahead-input>
+
+	<p>Both static data and remote API. This will merge results from both sources.</p>
+	<not-typeahead-input 
+		input-name="backend_call_example"
+		data='["Apple","Banana","Orange","Alabama","Alaska","Arizona","Arkansas","California","Colorado"]'
+		api="backend_call.php">
+	</not-typeahead-input>
 
 </body>
 </html>
